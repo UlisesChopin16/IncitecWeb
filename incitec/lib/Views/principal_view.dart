@@ -1,9 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:incitec/Services/firebase_service.dart';
-import 'package:incitec/Views/GraficosPage.dart';
-import 'package:incitec/Views/ReportesPage.dart';
+import 'package:incitec/Views/graficos_view.dart';
+import 'package:incitec/Views/reportes_view.dart';
 import 'package:incitec/Views/login_view.dart';
 
 class CategoriasPage extends StatefulWidget {

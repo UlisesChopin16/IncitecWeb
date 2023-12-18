@@ -24,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
   bool opcion = false;
   
   double top = 0;
-  double Height = 0;
+  double height = 0;
   double w = 0;
   double he = 0;
 
@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
   }
 
-  double heightC(BuildContext context) {
+  heightC(BuildContext context) {
     setState(() {
       var mediaQuery = MediaQuery.of(context);
       Size size = mediaQuery.size;
@@ -48,15 +48,11 @@ class _LoginPageState extends State<LoginPage> {
       he = h;
       w = size.width;
       if (!opcion) {
-        Height = h * 0.48;
+        height = h * 0.48;
         ic = Icon(Icons.lock, color: fillColor);
         top = 260;
-      } else {
-        Height = h * 0.20;
-        top = 150;
       }
     });
-    return Height;
   }
 
   
@@ -144,7 +140,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: Container(
                       alignment: Alignment.topCenter,
                       width: double.infinity,
-                      height: Height * 1.25,
+                      height: height * 1.25,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
@@ -160,7 +156,7 @@ class _LoginPageState extends State<LoginPage> {
                         delay: const Duration(milliseconds: 800),
                         child: Image.asset(
                           'assets/ITZ1.png',
-                          height: Height * 0.8,
+                          height: height * 0.8,
                         )
                       ),
                     ),
@@ -327,7 +323,9 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _bLogin() {
     return ElevatedButton(
-      style: ButtonStyle(iconSize: MaterialStateProperty.all(40)),
+      style: ButtonStyle(
+        iconSize: MaterialStateProperty.all(40),
+      ),
       onPressed: () async {
         // _login(context);
         if (_formKey.currentState!.validate()) {
@@ -354,24 +352,19 @@ class _LoginPageState extends State<LoginPage> {
           });
         }
       },
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          const Text(
-            'Iniciar Sesión ',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const Icon(Icons.login),
-          if (servicios.loading.value)
-            Container(
-              height: 20,
-              width: 20,
-              margin: const EdgeInsets.only(left: 10),
-              child: const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation(Colors.white),
-              ),
-            )
-        ],
+      child:const Padding(
+        padding:  EdgeInsets.symmetric(vertical: 5.0),
+        child:  Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Iniciar Sesión ',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(width: 10),
+            Icon(Icons.login),
+          ],
+        ),
       ),
     );
   }

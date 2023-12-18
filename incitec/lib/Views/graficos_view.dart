@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:incitec/Views/login_view.dart';
 import 'package:incitec/barGraph/bar_graph.dart';
 // import 'package:charts_flutter/flutter.dart' as charts;
