@@ -18,7 +18,10 @@ class FirebaseServicesInciTec extends GetxController {
 
   var getDataReportes = GetDataModelReportes(reportes: []).obs;
 
+  var listaPorcentajes = <double>[].obs;
+
   var datosAlumno = <String,dynamic>{}.obs;
+  var datosEmpleado = <String,dynamic>{}.obs;
   var datosCarrera = <String,dynamic>{}.obs;
 
   var pdf = Uint8List(0).obs;
@@ -34,6 +37,7 @@ class FirebaseServicesInciTec extends GetxController {
   var periodo = ''.obs;
   var periodoIngreso = ''.obs;
   var telefono = ''.obs;
+  var iniciales = ''.obs;
   var estado = 'Pendiente'.obs;
 
   User? user;
@@ -78,6 +82,7 @@ class FirebaseServicesInciTec extends GetxController {
         loading.value = false;
         if(!context.mounted) return;
         snackBarSucces(message: 'Bienvenido', context: context);
+        await obtenerDatosEmpleado(numeroControl: numeroControl, context: context);
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const CategoriasPage()));
 
       }else{
@@ -89,6 +94,22 @@ class FirebaseServicesInciTec extends GetxController {
       loading.value = false;
       if(!context.mounted) return;
       snackBarError(message: 'Algo salio mal, por favor intente de nuevo más tarde', context: context);
+    }
+  }
+
+  Future<void> obtenerDatosEmpleado({required String numeroControl, required BuildContext context}) async{
+    String collection = '/itz/tecnamex/';
+    loading.value = true;
+    try{
+      collection += 'empleados';
+      DocumentSnapshot ds = await firestore.collection(collection).doc(numeroControl).get();
+      datosEmpleado.value = ds.data() as Map<String, dynamic>;
+      obtenerIniciales(datosEmpleado['apellidosNombre'].toString());
+      email.value = datosEmpleado['correoInstitucional'].toString();
+      nombre.value = datosEmpleado['apellidosNombre'];
+      loading.value = false;
+    }catch(e){
+      loading.value = false;
     }
   }
 
@@ -111,6 +132,56 @@ class FirebaseServicesInciTec extends GetxController {
     getDataReportes.value = GetDataModelReportes.fromJson(resultMap);
     getDataReportes.value.ordenarReportes(OrdenReportes.pendiente);
     loading.value = false;
+  }
+
+  // metodo para obtener todos los reportes por edificio
+  Future<void> getReportesEdificio({required String edificio}) async {
+    loading.value = true;
+    
+    Map<String, List<Map<String, dynamic>>> resultMap = {};
+
+    List<Map<String, dynamic>> reportesList = [];
+
+    CollectionReference reportesRef = firestore.collection('reportes');
+
+    QuerySnapshot querySnapshot = await reportesRef.where('ubicacion',isEqualTo: edificio).get();
+
+    querySnapshot.docs.forEach((element) {
+      reportesList.add(element.data() as Map<String, dynamic>);
+    });
+
+    resultMap['Reportes'] = reportesList;
+    getDataReportes.value = GetDataModelReportes.fromJson(resultMap);
+
+    listaPorcentajes.value = getPorcentajes();
+
+    loading.value = false;
+  }
+
+  // metodo para obtener el porcentaje de reportes por categoria, son 4 categorias y lo sacaremos con el largo de cada lista
+  List<double> getPorcentajes(){
+    // primero obtenemos el largo de la lista
+    int largo = getDataReportes.value.reportes.length;
+    // luego obtenemos el porcentaje de cada categoria: Agua, Energía Eléctrica, Desechos Peligrosos, Otros
+    double porcentajeAgua = (getDataReportes.value.reportes.where((element) => element.categoria == 'Agua').length / largo) * 100;
+    double porcentajeEnergia = (getDataReportes.value.reportes.where((element) => element.categoria == 'Energía Eléctrica').length / largo) * 100;
+    double porcentajeDesechos = (getDataReportes.value.reportes.where((element) => element.categoria == 'Desechos Peligrosos').length / largo) * 100;
+    double porcentajeOtros = (getDataReportes.value.reportes.where((element) => element.categoria == 'Otros').length / largo) * 100;
+
+    if(porcentajeAgua.isNaN){
+      porcentajeAgua = 0;
+    }
+    if(porcentajeEnergia.isNaN){
+      porcentajeEnergia = 0;
+    }
+    if(porcentajeDesechos.isNaN){
+      porcentajeDesechos = 0;
+    }
+    if(porcentajeOtros.isNaN){
+      porcentajeOtros = 0;
+    }
+    // retornamos una lista con los porcentajes
+    return [porcentajeAgua, porcentajeEnergia, porcentajeDesechos, porcentajeOtros];
   }
 
   // Metodo para actualizar el estado de un reporte
@@ -140,6 +211,26 @@ class FirebaseServicesInciTec extends GetxController {
     }
   }
   
+  obtenerIniciales(String nombre){
+    String nombreCompleto = nombre;
+    List<String> nombreCompletoSeparado = nombreCompleto.split(' ');
+    int largo = nombreCompletoSeparado.length;
+
+    // Inicial del apellido paterno
+    String letraA = nombreCompletoSeparado[0].substring(0, 1);
+    // Inicial del nombre
+    String letraB = '';
+    if (largo == 4) {
+      letraB = nombreCompletoSeparado[(nombreCompletoSeparado.length - 2)].substring(0, 1);
+    }else if(largo == 3){
+      letraB = nombreCompletoSeparado[(nombreCompletoSeparado.length - 1)].substring(0, 1);
+    }else if(largo == 2){
+      letraB = nombreCompletoSeparado[(nombreCompletoSeparado.length - 1)].substring(0, 1);
+    }
+    
+    // Iniciales completas ej: US
+    iniciales.value = letraB + letraA;
+  }
 }
 
 
