@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:incitec/barGraph/bar_data.dart';
 
 class MyBarGraph extends StatelessWidget{
-  final List edRep;
+  final List<double> edRep;
   const MyBarGraph({
     super.key, 
     required this.edRep
@@ -34,9 +34,9 @@ class MyBarGraph extends StatelessWidget{
             sideTitles: SideTitles(
                 showTitles: true, 
                 getTitlesWidget: getBottomTitles,
-              ),
             ),
           ),
+        ),
         barGroups: myBarData.barData
         .map((data) {
             List<Color> colors = const [
@@ -77,16 +77,16 @@ class MyBarGraph extends StatelessWidget{
     Widget text;
     switch(value.toInt()){
       case 0: 
-        text = Text('A ${edRep[0]}%', style: Style);
+        text = Text('A ${edRep[0].toStringAsFixed(2)}%', style: Style);
         break;
       case 1: 
-        text = Text('E ${edRep[1]}%', style: Style);
+        text = Text('E ${edRep[1].toStringAsFixed(2)}%', style: Style);
         break;
       case 2: 
-        text = Text('D ${edRep[2]}%', style: Style);
+        text = Text('D ${edRep[2].toStringAsFixed(2)}%', style: Style);
         break;
       case 3: 
-        text = Text('O ${edRep[3]}%', style: Style);
+        text = Text('O ${edRep[3].toStringAsFixed(2)}%', style: Style);
         break;
       default:
         text = const Text('', style: Style);

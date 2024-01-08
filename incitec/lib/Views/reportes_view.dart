@@ -53,66 +53,19 @@ class _ReportesPageState extends State<ReportesPage> {
               child: Column(
                 children: [
                   // Boton para filtrar por estado, Pendiente, En revisión, Revisado
-                  SizedBox(
-                    width: 200,
-                    child: DropdownButtonFormField<String>(
-                      value: servicios.estado.value,
-                      icon: Icon(
-                        Icons.arrow_drop_down_circle,
-                        color: Palette.letras,
-                      ),
-                      iconSize: 34,
-                      isExpanded: true,
-                      style: TextStyle(
-                        color: Palette.letras,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          servicios.estado.value = newValue!;
-                          if(newValue == 'Pendiente'){
-                            servicios.getDataReportes.value.ordenarReportes(OrdenReportes.pendiente);
-                          }else if(newValue == 'En revisión'){
-                            servicios.getDataReportes.value.ordenarReportes(OrdenReportes.enRevision);
-                          }else if(newValue == 'Revisado'){
-                            servicios.getDataReportes.value.ordenarReportes(OrdenReportes.revisado);
-                          }
-                        });
-                        
-                      },
-                      items: <String>['Pendiente', 'En revisión', 'Revisado']
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      // Le damos un estilo al dropdown
-                      decoration: InputDecoration(
-                        // ponemos el fondo del dropdown transparente
-                        filled: true,
-                        
-                        // le damos un color al fondo del dropdown
-                        fillColor:Colors.white,
-                        
-                        // Le damos un icono al dropdown
-                        hintText: 'Filtrar por estado',
-                        hintStyle: TextStyle(
-                          color: Colors.black.withOpacity(0.4),
-                          fontSize: 18,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        )
-                      ),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      dropDownFiltro(),
+                      const SizedBox(width: 10.0,),
+                      formFiltro(),
+                    ],
                   ),
                   ListView.builder( 
                     shrinkWrap: true,
-                    itemCount: servicios.getDataReportes.value.reportes.length,
+                    itemCount: servicios.filtroReportes.length,
                     itemBuilder: (context, index) {
-                      final reportes = servicios.getDataReportes.value.reportes[index];
+                      final reportes = servicios.filtroReportes[index];
                       if(reportes.categoria != widget.cat){
                         return Container();
                       }else{
@@ -142,6 +95,78 @@ class _ReportesPageState extends State<ReportesPage> {
     );
   }
 
+  dropDownFiltro(){
+    return SizedBox(
+      width: 200,
+      child: DropdownButtonFormField<String>(
+        value: servicios.estado.value,
+        icon: Icon(
+          Icons.arrow_drop_down_circle,
+          color: Palette.letras,
+        ),
+        iconSize: 34,
+        isExpanded: true,
+        style: TextStyle(
+          color: Palette.letras,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+        onChanged: (String? newValue) {
+          setState(() {
+            servicios.estado.value = newValue!;
+            if(newValue == 'Pendiente'){
+              servicios.getDataReportes.value.ordenarReportes(OrdenReportes.pendiente);
+            }else if(newValue == 'En revisión'){
+              servicios.getDataReportes.value.ordenarReportes(OrdenReportes.enRevision);
+            }else if(newValue == 'Revisado'){
+              servicios.getDataReportes.value.ordenarReportes(OrdenReportes.revisado);
+            }
+          });
+          
+        },
+        items: <String>['Pendiente', 'En revisión', 'Revisado']
+            .map<DropdownMenuItem<String>>((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value),
+          );
+        }).toList(),
+        // Le damos un estilo al dropdown
+        decoration: decoracion('Filtrar por estado'),
+      ),
+    );
+  }
+
+  formFiltro(){
+    return SizedBox(
+      width: 400,
+      child: TextFormField(
+        onChanged: servicios.buscarReporte,
+        decoration: decoracion('Escriba el número de control o RFC'),
+      ),
+    );
+  }
+
+  decoracion(String hint){
+    return InputDecoration(
+      // ponemos el fondo del dropdown transparente
+      filled: true,
+      
+      // le damos un color al fondo del dropdown
+      fillColor:Colors.white,
+      
+      // Le damos un icono al dropdown
+      hintText: hint,
+      hintStyle: TextStyle(
+        color: Colors.black.withOpacity(0.4),
+        fontSize: 18,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+      )
+    );
+  }
+
   cardReportes({
     required int index,
     required String cat, 
@@ -160,7 +185,7 @@ class _ReportesPageState extends State<ReportesPage> {
       padding: const EdgeInsets.symmetric(horizontal: 10.0,vertical: 10.0),
       child: InkWell(
         onTap: () async {
-          await servicios.updateReporte(index: index,id: fecha, nuevoEstado: 'En revisión', context: context);
+          await servicios.updateReporte(index: index,id: fecha, responsable: servicios.usuario.value, nuevoEstado: 'En revisión', context: context);
           if(!context.mounted) return;
           Navigator.push(context, MaterialPageRoute(builder: (context) => InfoReportesPage(
             index: index,
@@ -169,7 +194,7 @@ class _ReportesPageState extends State<ReportesPage> {
             descripcion: descripcion,
             estado: estado,
             fecha: fecha,
-            imagen: imagen,
+            imagen: 'assets/energia.jpg',
             nombreCompleto: nombreCompleto,
             ubicacion: ubicacion,
             carrera: carrera,
@@ -246,7 +271,7 @@ class _ReportesPageState extends State<ReportesPage> {
         transitionOnUserGestures: true,
         tag: rutaImagen,
         child: CachedNetworkImage(
-          imageUrl: rutaImagen,
+          imageUrl: 'assets/energia.jpg',
           imageBuilder: contenedorImagen,
           placeholder: (context, url) => const Center(
             child: CircularProgressIndicator(),
@@ -287,6 +312,7 @@ class _ReportesPageState extends State<ReportesPage> {
         ),
         Text(
           texto,
+          maxLines: 2,
           style: TextStyle(
             fontSize: 20,
             color: color,

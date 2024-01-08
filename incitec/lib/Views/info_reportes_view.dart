@@ -95,7 +95,7 @@ class _InfoReportesPageState extends State<InfoReportesPage> {
             ),
             TextButton(
               onPressed: () async {
-                await servicios.updateReporte(index: widget.index, id: widget.fecha, nuevoEstado: 'Revisado', context: context);
+                await servicios.updateReporte(index: widget.index, id: widget.fecha, responsable: servicios.usuario.value, nuevoEstado: 'Revisado', context: context);
                 setState(() {
                   cambioEstado = true;
                   estado = 'Revisado';
@@ -147,6 +147,7 @@ class _InfoReportesPageState extends State<InfoReportesPage> {
                             centerTitle: true,
                             title: const Text('Detalles del reporte'),
                             actions: [
+                              // boton para generar el pdf
                               IconButton(
                                 onPressed: () async {
                                   servicios.loading.value = true;
@@ -164,6 +165,8 @@ class _InfoReportesPageState extends State<InfoReportesPage> {
                                     numeroControl: widget.numeroControl,
                                     incidencia: widget.incidencia,
                                   );
+                                  if(!context.mounted) return;
+                                  await servicios.subirArchivo(data: servicios.pdf.value, nombre: '${widget.fecha}.pdf', context: context);
                                   servicios.loading.value = false;
                                   if(!context.mounted)return;
                                   Navigator.of(context).push(
@@ -176,6 +179,7 @@ class _InfoReportesPageState extends State<InfoReportesPage> {
                                 },
                                 icon: const Icon(Icons.picture_as_pdf)
                               ),
+                              // boton para cambiar el estado de En revision a Revisado
                               if(!cambioEstado)
                               IconButton(
                                 onPressed:()=> mostrarDialogo(context),
@@ -285,7 +289,7 @@ class _InfoReportesPageState extends State<InfoReportesPage> {
         tag: widget.imagen,
         transitionOnUserGestures: true,
         child: CachedNetworkImage(
-          imageUrl: widget.imagen,
+          imageUrl: 'assets/energia.jpg',
           imageBuilder: contenedorImagen,
           placeholder: (context, url) => const Center(
             child: CircularProgressIndicator(),

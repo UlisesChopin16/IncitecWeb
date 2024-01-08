@@ -13,47 +13,46 @@ String getDataModelReportesToJson(GetDataModelReportes data) =>
 enum OrdenReportes { pendiente, enRevision, revisado }
 
 class GetDataModelReportes {
-    List<Reporte> reportes;
+  List<Reporte> reportes;
 
-    GetDataModelReportes({
-        required this.reportes,
-    });
+  GetDataModelReportes({
+      required this.reportes,
+  });
 
-    factory GetDataModelReportes.fromJson(Map<String, dynamic> json) => GetDataModelReportes(
-        reportes: List<Reporte>.from(json["Reportes"].map((x) => Reporte.fromJson(x))),
-    );
+  factory GetDataModelReportes.fromJson(Map<String, dynamic> json) => GetDataModelReportes(
+      reportes: List<Reporte>.from(json["Reportes"].map((x) => Reporte.fromJson(x))),
+  );
 
-    Map<String, dynamic> toJson() => {
-        "Reportes": List<dynamic>.from(reportes.map((x) => x.toJson())),
-    };
+  Map<String, dynamic> toJson() => {
+      "Reportes": List<dynamic>.from(reportes.map((x) => x.toJson())),
+  };
 
-    void ordenarReportes(OrdenReportes orden) {
-      reportes.sort((a, b) => _compararEstados(a.estado, b.estado, orden));
+  void ordenarReportes(OrdenReportes orden) {
+    reportes.sort((a, b) => _compararEstados(a.estado, b.estado, orden));
+  }
 
-      print("Después de ordenar: ${reportes.map((reporte) => reporte.estado)}");
-    }
+  int _compararEstados(String estadoA, String estadoB, OrdenReportes orden) {
+    final estadosOrdenados = ["Pendiente", "En revisión", "Revisado"];
 
-    int _compararEstados(String estadoA, String estadoB, OrdenReportes orden) {
-      final estadosOrdenados = ["Pendiente", "En revisión", "Revisado"];
-
-      if (orden == OrdenReportes.pendiente) {
-        return estadosOrdenados.indexOf(estadoA).compareTo(estadosOrdenados.indexOf(estadoB));
-      } else if (orden == OrdenReportes.enRevision) {
-        if (estadoA == "En revisión" && estadoB == "En revisión") {
-          return 0; // Igual para "En revisión"
-        } else if (estadoA == "En revisión") {
-          return -1; // "En revisión" debe ir antes de otros estados
-        } else if (estadoB == "En revisión") {
-          return 1; // Otros estados deben ir después de "En revisión"
-        } else {
-          return 0; // Sin cambios en el orden
-        }
-      } else if (orden == OrdenReportes.revisado) {
-        return estadosOrdenados.indexOf(estadoB).compareTo(estadosOrdenados.indexOf(estadoA));
+    if (orden == OrdenReportes.pendiente) {
+      return estadosOrdenados.indexOf(estadoA).compareTo(estadosOrdenados.indexOf(estadoB));
+    } else if (orden == OrdenReportes.enRevision) {
+      if (estadoA == "En revisión" && estadoB == "En revisión") {
+        return 0; // Igual para "En revisión"
+      } else if (estadoA == "En revisión") {
+        return -1; // "En revisión" debe ir antes de otros estados
+      } else if (estadoB == "En revisión") {
+        return 1; // Otros estados deben ir después de "En revisión"
       } else {
         return 0; // Sin cambios en el orden
       }
+    } else if (orden == OrdenReportes.revisado) {
+      return estadosOrdenados.indexOf(estadoB).compareTo(estadosOrdenados.indexOf(estadoA));
+    } else {
+      return 0; // Sin cambios en el orden
     }
+  }
+  
 }
 
 class Reporte {
@@ -67,6 +66,7 @@ class Reporte {
     String carrera;
     String numeroControl;
     String incidencia;
+    String revisadoPor;
 
     Reporte({
         required this.descripcion,
@@ -79,6 +79,7 @@ class Reporte {
         required this.carrera,
         required this.numeroControl,
         required this.incidencia,
+        required this.revisadoPor,
     });
 
     factory Reporte.fromJson(Map<String, dynamic> json) => Reporte(
@@ -92,6 +93,7 @@ class Reporte {
         carrera: json["carrera"],
         numeroControl: json["numeroControl"],
         incidencia: json["incidencia"],
+        revisadoPor: json["revisadoPor"],
     );
 
     Map<String, dynamic> toJson() => {
@@ -105,5 +107,6 @@ class Reporte {
         "carrera": carrera,
         "numeroControl": numeroControl,
         "incidencia": incidencia,
+        "revisadoPor": revisadoPor,
     };
 }

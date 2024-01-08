@@ -17,6 +17,7 @@ class FirebaseServicesInciTec extends GetxController {
   FirebaseAuth auth = FirebaseAuth.instance;
 
   var getDataReportes = GetDataModelReportes(reportes: []).obs;
+  var filtroReportes = <Reporte>[].obs;
 
   var listaPorcentajes = <double>[].obs;
 
@@ -131,6 +132,7 @@ class FirebaseServicesInciTec extends GetxController {
     resultMap['Reportes'] = reportesList;
     getDataReportes.value = GetDataModelReportes.fromJson(resultMap);
     getDataReportes.value.ordenarReportes(OrdenReportes.pendiente);
+    filtroReportes.value = getDataReportes.value.reportes;
     loading.value = false;
   }
 
@@ -145,6 +147,30 @@ class FirebaseServicesInciTec extends GetxController {
     CollectionReference reportesRef = firestore.collection('reportes');
 
     QuerySnapshot querySnapshot = await reportesRef.where('ubicacion',isEqualTo: edificio).get();
+
+    querySnapshot.docs.forEach((element) {
+      reportesList.add(element.data() as Map<String, dynamic>);
+    });
+
+    resultMap['Reportes'] = reportesList;
+    getDataReportes.value = GetDataModelReportes.fromJson(resultMap);
+
+    listaPorcentajes.value = getPorcentajes();
+
+    loading.value = false;
+  }
+
+  // metodo para obtener todos los reportes
+  Future<void> getReportesTotales() async {
+    loading.value = true;
+    
+    Map<String, List<Map<String, dynamic>>> resultMap = {};
+
+    List<Map<String, dynamic>> reportesList = [];
+
+    CollectionReference reportesRef = firestore.collection('reportes');
+
+    QuerySnapshot querySnapshot = await reportesRef.get();
 
     querySnapshot.docs.forEach((element) {
       reportesList.add(element.data() as Map<String, dynamic>);
@@ -185,7 +211,7 @@ class FirebaseServicesInciTec extends GetxController {
   }
 
   // Metodo para actualizar el estado de un reporte
-  Future<void> updateReporte({required int index,required String id, required String nuevoEstado, required BuildContext context}) async {
+  Future<void> updateReporte({required int index,required String id, required String responsable, required String nuevoEstado, required BuildContext context}) async {
     loading.value = true;
     try{
       // Primero checamos que el reporte tenga el estado mismo estado, si el estado es el mismo no se actualiza
@@ -194,7 +220,7 @@ class FirebaseServicesInciTec extends GetxController {
         loading.value = false;
         return;
       }
-      await firestore.collection('reportes').doc(id).update({'estado': nuevoEstado});
+      await firestore.collection('reportes').doc(id).update({'estado': nuevoEstado, 'revisadoPor': responsable});
 
       loading.value = false;
       if(!context.mounted) return;
@@ -210,7 +236,24 @@ class FirebaseServicesInciTec extends GetxController {
       snackBarError(message: 'Algo salio mal, por favor intente de nuevo más tarde', context: context);
     }
   }
-  
+
+  // Metodo para subir un archivo pdf a firebase storage con Uint8List
+  Future<void> subirArchivo({required Uint8List data,required String nombre,required BuildContext context}) async {
+    try {
+      loading.value = true;
+      final Reference ref = storage.ref().child('reportesPDF').child(nombre);
+      final UploadTask uploadTask = ref.putData(data);
+
+      await uploadTask.whenComplete(() => true);
+      loading.value = false;
+    } catch (e) {
+      mensajeError.value = 'Algo salio mal, porfavor intente de nuevo más tarde';
+      if(!context.mounted) return;
+      snackBarError(message: mensajeError.value, context: context);
+      loading.value = false;
+    }
+  }
+
   obtenerIniciales(String nombre){
     String nombreCompleto = nombre;
     List<String> nombreCompletoSeparado = nombreCompleto.split(' ');
@@ -230,6 +273,15 @@ class FirebaseServicesInciTec extends GetxController {
     
     // Iniciales completas ej: US
     iniciales.value = letraB + letraA;
+  }
+
+  void buscarReporte(String query){
+    filtroReportes.value = getDataReportes.value.reportes.where(
+      (reporte) {
+        return reporte.numeroControl.toLowerCase().contains(query.toLowerCase()) || 
+        reporte.revisadoPor.toLowerCase().contains(query.toLowerCase());
+      }
+    ).toList();
   }
 }
 

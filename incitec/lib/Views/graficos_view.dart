@@ -44,14 +44,14 @@ class _GraficosPageState extends State<GraficosPage> {
     'Edificio 10',
   ];
 
-  String titulo = 'Edificio 1';
+  String titulo = 'Vista general de reportes';
   String edificio = '';
 
 
   @override
   void initState() {
     super.initState();
-    servicios.getReportesEdificio(edificio: 'Edificio 1');
+    servicios.getReportesTotales();
   }
 
   @override
@@ -137,6 +137,16 @@ class _GraficosPageState extends State<GraficosPage> {
             title: const Text('Volver a inicio'),
             onTap: () {
               Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
+          ),
+          ListTile(
+            title: const Text('Vista general de reportes'),
+            onTap: () {
+              setState(() {
+                titulo = 'Vista general de reportes';
+              });
+              servicios.getReportesTotales();
               Navigator.of(context).pop();
             },
           ),

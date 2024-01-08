@@ -71,6 +71,13 @@ class _CategoriasPageState extends State<CategoriasPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            const SizedBox(height: 20.0, ),
+                            const Text('Estas son las categorias disponibles:',
+                              style: TextStyle(
+                                fontSize: 30.0,
+                                fontWeight: FontWeight.bold
+                              ),
+                            ),
                             categoriaApartado(nombre: 'Agua', nombreImagen: 'fuga'),
                             categoriaApartado(nombre: 'Energía Eléctrica', nombreImagen: 'energia'),
                             categoriaApartado(nombre: 'Desechos Peligrosos', nombreImagen: 'desechosPeligrosos'),
