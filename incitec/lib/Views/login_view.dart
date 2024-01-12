@@ -1,6 +1,7 @@
 
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 
 import 'package:get/get.dart';
@@ -29,6 +30,9 @@ class _LoginPageState extends State<LoginPage> {
   double he = 0;
 
   Color fillColor = Palette.letras;
+
+  FocusNode focusNodeUsuario = FocusNode();
+  FocusNode focusNodePassword = FocusNode();
   
   late Icon ic = Icon(Icons.lock, color: fillColor);
 
@@ -97,6 +101,33 @@ class _LoginPageState extends State<LoginPage> {
       opcion = true;
       ic = const Icon(Icons.lock_open);
     });
+  }
+
+  inicioSesion () async {
+    // _login(context);
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        servicios.loading.value = true;
+        opcion = false;
+        ic = const Icon(Icons.lock_open);
+        final FocusScopeNode focus = FocusScope.of(context);
+        if (!focus.hasPrimaryFocus && focus.hasFocus) {
+          FocusManager.instance.primaryFocus?.unfocus();
+        }
+      });
+
+      await servicios.loginUsingEmailPassword(rfc: email!.toLowerCase(), password: password!, context: context);
+    } else{
+      setState(() {
+        servicios.loading.value = false;
+        opcion = false;
+        
+        final FocusScopeNode focus = FocusScope.of(context);
+        if (!focus.hasPrimaryFocus && focus.hasFocus) {
+          FocusManager.instance.primaryFocus?.unfocus();
+        }
+      });
+    }
   }
 
   @override
@@ -243,6 +274,10 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _usuario() {
     return TextFormField(
+      focusNode: focusNodeUsuario,
+      onFieldSubmitted: (value) {
+        inicioSesion();
+      },  
       validator: (value) {
         String u = value.toString();
         if (u.isEmpty || u.toString().trim() == " ") {
@@ -270,7 +305,7 @@ class _LoginPageState extends State<LoginPage> {
         color: Palette.letras,
       ),
       decoration: InputDecoration(
-        labelText: 'Usuario o Email',
+        labelText: 'Usuario',
         labelStyle:  TextStyle(color: Palette.letras.withOpacity(0.7)),
         prefixIcon:  Icon(Icons.person, color: Palette.letras),
         border: OutlineInputBorder(
@@ -289,6 +324,10 @@ class _LoginPageState extends State<LoginPage> {
   }*/
   Widget _password() {
     return TextFormField(
+      focusNode: focusNodePassword,
+      onFieldSubmitted: (value) {
+        inicioSesion();
+      },
       validator: validatorPass,
       onTap: onTapL,
       onChanged: onChangedPass,
@@ -326,32 +365,7 @@ class _LoginPageState extends State<LoginPage> {
       style: ButtonStyle(
         iconSize: MaterialStateProperty.all(40),
       ),
-      onPressed: () async {
-        // _login(context);
-        if (_formKey.currentState!.validate()) {
-          setState(() {
-            servicios.loading.value = true;
-            opcion = false;
-            ic = const Icon(Icons.lock_open);
-            final FocusScopeNode focus = FocusScope.of(context);
-            if (!focus.hasPrimaryFocus && focus.hasFocus) {
-              FocusManager.instance.primaryFocus?.unfocus();
-            }
-          });
-
-          await servicios.loginUsingEmailPassword(numeroControl: email!, password: password!, context: context);
-        } else{
-          setState(() {
-            servicios.loading.value = false;
-            opcion = false;
-            
-            final FocusScopeNode focus = FocusScope.of(context);
-            if (!focus.hasPrimaryFocus && focus.hasFocus) {
-              FocusManager.instance.primaryFocus?.unfocus();
-            }
-          });
-        }
-      },
+      onPressed: inicioSesion,
       child:const Padding(
         padding:  EdgeInsets.symmetric(vertical: 5.0),
         child:  Row(

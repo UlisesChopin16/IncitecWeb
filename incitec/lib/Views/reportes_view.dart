@@ -194,7 +194,7 @@ class _ReportesPageState extends State<ReportesPage> {
             descripcion: descripcion,
             estado: estado,
             fecha: fecha,
-            imagen: 'assets/energia.jpg',
+            imagen: imagen,
             nombreCompleto: nombreCompleto,
             ubicacion: ubicacion,
             carrera: carrera,
@@ -271,7 +271,7 @@ class _ReportesPageState extends State<ReportesPage> {
         transitionOnUserGestures: true,
         tag: rutaImagen,
         child: CachedNetworkImage(
-          imageUrl: 'assets/energia.jpg',
+          imageUrl: rutaImagen,
           imageBuilder: contenedorImagen,
           placeholder: (context, url) => const Center(
             child: CircularProgressIndicator(),

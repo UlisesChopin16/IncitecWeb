@@ -1,14 +1,17 @@
 import 'dart:typed_data';
+import 'package:get/get.dart';
+
+import 'package:incitec/Models/reportes_model.dart';
+import 'package:incitec/Views/principal_view.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:incitec/Models/reportes_model.dart';
-import 'package:incitec/Views/principal_view.dart';
 
 class FirebaseServicesInciTec extends GetxController {
+
+  // MAGR581021G56
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -29,6 +32,9 @@ class FirebaseServicesInciTec extends GetxController {
 
   var loading = false.obs;
   var verificarTelefono = false.obs;
+  var estudiante = false.obs;
+  var administrativo = false.obs;
+  var jefe = false.obs;
 
   var usuario = ''.obs;
   var nombre = ''.obs;
@@ -40,6 +46,12 @@ class FirebaseServicesInciTec extends GetxController {
   var telefono = ''.obs;
   var iniciales = ''.obs;
   var estado = 'Pendiente'.obs;
+  var permisos = <String>[].obs;
+
+  var activo = false.obs;
+
+
+
 
   User? user;
 
@@ -72,24 +84,38 @@ class FirebaseServicesInciTec extends GetxController {
   }
 
   
-  Future<void> loginUsingEmailPassword({required String numeroControl, required String password, required BuildContext context}) async{
+  Future<void> loginUsingEmailPassword({required String rfc, required String password, required BuildContext context}) async{
     loading.value = true;
     try{
-      email.value = '$numeroControl@tecnamex.com';
+      email.value = '$rfc@tecnamex.com';
       UserCredential userCredential = await auth.signInWithEmailAndPassword(email: email.value, password: password);
       user = userCredential.user;
-      if(user != null){
-        usuario.value = numeroControl;
+      if(user == null){
         loading.value = false;
+        if(!context.mounted) return;
+        snackBarError(message: 'Hubo un error en el usuario o contraseña', context: context);
+        return;
+      }
+      else{
+        usuario.value = rfc;
+        loading.value = false;
+        if(!context.mounted) return;
+        await obtenerDatosEmpleado(rfc: rfc.toUpperCase(), context: context);
+        if(!activo.value){
+          loading.value = false;
+          if(!context.mounted) return;
+          snackBarError(message: 'Lo sentimos, no puedes ingresar al sistema', context: context);
+          return;
+        }
+        if(estudiante.value){
+          loading.value = false;
+          if(!context.mounted) return;
+          snackBarError(message: 'Lo sentimos, no puedes ingresar al sistema', context: context);
+          return;
+        }
         if(!context.mounted) return;
         snackBarSucces(message: 'Bienvenido', context: context);
-        await obtenerDatosEmpleado(numeroControl: numeroControl, context: context);
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const CategoriasPage()));
-
-      }else{
-        loading.value = false;
-        if(!context.mounted) return;
-        snackBarError(message: 'Error al iniciar sesión', context: context);
       }
     }catch(e){
       loading.value = false;
@@ -98,13 +124,44 @@ class FirebaseServicesInciTec extends GetxController {
     }
   }
 
-  Future<void> obtenerDatosEmpleado({required String numeroControl, required BuildContext context}) async{
+  Future<void> obtenerDatosEmpleado({required String rfc, required BuildContext context}) async{
     String collection = '/itz/tecnamex/';
     loading.value = true;
     try{
-      collection += 'empleados';
-      DocumentSnapshot ds = await firestore.collection(collection).doc(numeroControl).get();
+      collection += 'usuarios';
+      activo.value = false;
+      estudiante.value = false;
+      administrativo.value = false;
+      jefe.value = false;
+      
+      DocumentSnapshot ds = await firestore.collection(collection).doc(rfc).get();
       datosEmpleado.value = ds.data() as Map<String, dynamic>;
+      activo.value = datosEmpleado['activo'];
+      if(!activo.value){
+        return;
+      }
+      permisos.value = datosEmpleado['permisos'].cast<String>();
+      for(int i = 0; i < permisos.length; i++){
+        if(permisos[i] == 'Estudiante'){
+          estudiante.value = true;
+          return;
+        }
+        if(permisos[i] == 'JefeRecursosMateriales'){
+          jefe.value = true;
+          break;
+        }
+        if(permisos[i] == 'AdministrativoRecursosMateriales'){
+          administrativo.value = true;
+          break;
+        }
+        
+      }
+      collection = '/itz/tecnamex/';
+      collection += 'empleados';
+      QuerySnapshot querySnapshot = await firestore.collection(collection).where('rfc',isEqualTo: rfc).get();
+      querySnapshot.docs.forEach((element) {
+        datosEmpleado.value = element.data() as Map<String, dynamic>;
+      });
       obtenerIniciales(datosEmpleado['apellidosNombre'].toString());
       email.value = datosEmpleado['correoInstitucional'].toString();
       nombre.value = datosEmpleado['apellidosNombre'];
