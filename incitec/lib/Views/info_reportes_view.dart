@@ -180,11 +180,11 @@ class _InfoReportesPageState extends State<InfoReportesPage> {
                                 icon: const Icon(Icons.picture_as_pdf)
                               ),
                               // boton para cambiar el estado de En revision a Revisado
-                              if(!cambioEstado)
-                              IconButton(
-                                onPressed:()=> mostrarDialogo(context),
-                                icon: const Icon(Icons.check)
-                              ),
+                              if(!cambioEstado && servicios.jefe.value)
+                                IconButton(
+                                  onPressed:()=> mostrarDialogo(context),
+                                  icon: const Icon(Icons.check)
+                                ),
                             ],
                           ),
                         ),
@@ -289,7 +289,7 @@ class _InfoReportesPageState extends State<InfoReportesPage> {
         tag: widget.imagen,
         transitionOnUserGestures: true,
         child: CachedNetworkImage(
-          imageUrl: 'assets/energia.jpg',
+          imageUrl: widget.imagen,
           imageBuilder: contenedorImagen,
           placeholder: (context, url) => const Center(
             child: CircularProgressIndicator(),

@@ -40,14 +40,15 @@ class _CategoriasPageState extends State<CategoriasPage> {
                 email: servicios.email.value,
                 iniciales: servicios.iniciales.value,
               ),
-              ListTile(
-                title: const Text('Estadisticas'),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const GraficosPage())
-                  );
-                },
-              ),
+              if(servicios.jefe.value)
+                ListTile(
+                  title: const Text('Estadisticas'),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => const GraficosPage())
+                    );
+                  },
+                ),
               ListTile(
                 title: const Text('Cerrar Sesión'),
                 onTap: () {

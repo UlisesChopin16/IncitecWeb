@@ -142,7 +142,7 @@ class FirebaseServicesInciTec extends GetxController {
       }
       permisos.value = datosEmpleado['permisos'].cast<String>();
       for(int i = 0; i < permisos.length; i++){
-        if(permisos[i] == 'Estudiante'){
+        if(permisos[i] == 'Estudiante' || permisos[i] == 'Docente' || permisos[i] == 'Administrativo'){
           estudiante.value = true;
           return;
         }
@@ -159,15 +159,15 @@ class FirebaseServicesInciTec extends GetxController {
       collection = '/itz/tecnamex/';
       collection += 'empleados';
       QuerySnapshot querySnapshot = await firestore.collection(collection).where('rfc',isEqualTo: rfc).get();
-      querySnapshot.docs.forEach((element) {
-        datosEmpleado.value = element.data() as Map<String, dynamic>;
-      });
+      datosEmpleado.value = querySnapshot.docs[0].data() as Map<String, dynamic>;
       obtenerIniciales(datosEmpleado['apellidosNombre'].toString());
       email.value = datosEmpleado['correoInstitucional'].toString();
       nombre.value = datosEmpleado['apellidosNombre'];
       loading.value = false;
     }catch(e){
       loading.value = false;
+      if(!context.mounted) return;
+      snackBarError(message: 'Algo salio mal, por favor intente de nuevo más tarde', context: context);
     }
   }
 
